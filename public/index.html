@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>MultiTetris - 2 Oyunculu Online Tetris</title>
+  <title>Enkazweb MultiTetris - 2 Oyunculu Online Tetris</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,8 +14,11 @@
     <!-- Ana Menü -->
     <div id="menu-screen" class="screen">
       <div class="logo">
-        <span class="logo-sub">MULTIPLAYER</span>
-        <span class="logo-main">TETRIS</span>
+        <span class="logo-brand">Enkazweb</span>
+        <div class="logo-tetris">
+          <span class="block block-i">M</span><span class="block block-o">U</span><span class="block block-t">L</span><span class="block block-s">T</span><span class="block block-z">I</span><span class="block block-j">T</span><span class="block block-l">E</span><span class="block block-i">T</span><span class="block block-o">R</span><span class="block block-t">I</span><span class="block block-s">S</span>
+        </div>
+        <span class="logo-version">V1.0</span>
       </div>
       
       <input type="text" id="player-name" placeholder="Adınız" maxlength="12">
@@ -120,6 +126,11 @@
       </div>
       <button id="play-again-btn" class="btn btn-primary">🔄 YENİDEN OYNA</button>
       <button id="back-menu-btn" class="btn btn-secondary">🏠 ANA MENÜ</button>
+      
+      <div class="developer-credit">
+        <span class="credit-label">Geliştiren:</span>
+        <span class="credit-name">Cem YILDIRIM</span>
+      </div>
     </div>
     
     <!-- Bağlantı Hatası -->

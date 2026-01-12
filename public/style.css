@@ -41,23 +41,65 @@ body {
   margin-bottom: 20px;
 }
 
-.logo-sub {
+.logo-brand {
   display: block;
-  font-size: 12px;
-  letter-spacing: 8px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 14px;
   color: #00f5ff;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
+  text-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+  letter-spacing: 2px;
 }
 
-.logo-main {
-  display: block;
-  font-size: 48px;
-  font-weight: 900;
-  background: linear-gradient(180deg, #ff6b6b 0%, #ffd93d 50%, #6bcb77 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: 8px;
+.logo-tetris {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.logo-tetris .block {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 28px;
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+  box-shadow: 
+    inset 3px 3px 0 rgba(255,255,255,0.3),
+    inset -3px -3px 0 rgba(0,0,0,0.3),
+    0 4px 8px rgba(0,0,0,0.4);
+  animation: blockFloat 2s ease-in-out infinite;
+}
+
+.block-i { background: linear-gradient(145deg, #00f5ff, #00b8cc); color: #003d44; animation-delay: 0s; }
+.block-o { background: linear-gradient(145deg, #ffd93d, #ccad31); color: #4d4112; animation-delay: 0.1s; }
+.block-t { background: linear-gradient(145deg, #b06bff, #8a53cc); color: #2d1a4d; animation-delay: 0.2s; }
+.block-s { background: linear-gradient(145deg, #6bcb77, #55a25f); color: #1a3d1f; animation-delay: 0.3s; }
+.block-z { background: linear-gradient(145deg, #ff6b6b, #cc5555); color: #4d1f1f; animation-delay: 0.4s; }
+.block-j { background: linear-gradient(145deg, #5b7fff, #4963cc); color: #1a2244; animation-delay: 0.5s; }
+.block-l { background: linear-gradient(145deg, #ff9f43, #cc7f36); color: #4d2f14; animation-delay: 0.6s; }
+
+@keyframes blockFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.logo-version {
+  display: inline-block;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 10px;
+  color: #ffd93d;
+  background: rgba(255, 217, 61, 0.1);
+  border: 2px solid #ffd93d;
+  border-radius: 5px;
+  padding: 5px 12px;
+  margin-top: 5px;
+  text-shadow: 0 0 10px rgba(255, 217, 61, 0.5);
 }
 
 /* Inputs */
@@ -478,6 +520,39 @@ input[type="text"]::placeholder {
   color: #ff6b6b;
 }
 
+/* Developer Credit */
+.developer-credit {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.credit-label {
+  display: block;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 5px;
+}
+
+.credit-name {
+  display: block;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 14px;
+  background: linear-gradient(90deg, #00f5ff, #b06bff, #ff6b6b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 3s ease infinite;
+  background-size: 200% 200%;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 /* Modal */
 .modal {
   position: fixed;
@@ -521,8 +596,18 @@ input[type="text"]::placeholder {
     max-height: 150px;
   }
   
-  .logo-main {
-    font-size: 36px;
+  .logo-tetris .block {
+    font-size: 20px;
+    width: 28px;
+    height: 28px;
+  }
+  
+  .logo-brand {
+    font-size: 11px;
+  }
+  
+  .logo-version {
+    font-size: 8px;
   }
   
   .players-list {
@@ -532,6 +617,10 @@ input[type="text"]::placeholder {
   
   .vs {
     transform: rotate(90deg);
+  }
+  
+  .credit-name {
+    font-size: 11px;
   }
 }
 
