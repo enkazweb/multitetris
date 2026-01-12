@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>MultiTetris - 2 Oyunculu Online Tetris</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Ana Menü -->
+    <div id="menu-screen" class="screen">
+      <div class="logo">
+        <span class="logo-sub">MULTIPLAYER</span>
+        <span class="logo-main">TETRIS</span>
+      </div>
+      
+      <input type="text" id="player-name" placeholder="Adınız" maxlength="12">
+      
+      <div class="menu-buttons">
+        <button id="create-room-btn" class="btn btn-primary">🎮 ODA OLUŞTUR</button>
+        <div class="join-section">
+          <input type="text" id="room-code-input" placeholder="Oda Kodu" maxlength="6">
+          <button id="join-room-btn" class="btn btn-secondary">KATIL</button>
+        </div>
+      </div>
+      
+      <p class="hint">Arkadaşınla aynı anda oyna!</p>
+    </div>
+    
+    <!-- Lobi -->
+    <div id="lobby-screen" class="screen hidden">
+      <p class="room-label">ODA KODU</p>
+      <div class="room-code-display" id="display-room-code"></div>
+      
+      <div class="players-list">
+        <div class="player-slot" id="player1-slot">
+          <span class="player-name">Bekleniyor...</span>
+          <span class="player-status"></span>
+        </div>
+        <div class="vs">VS</div>
+        <div class="player-slot" id="player2-slot">
+          <span class="player-name">Bekleniyor...</span>
+          <span class="player-status"></span>
+        </div>
+      </div>
+      
+      <button id="ready-btn" class="btn btn-primary">✓ HAZIRIM</button>
+      <p class="hint">İki oyuncu da hazır olunca oyun başlar</p>
+      
+      <button id="copy-code-btn" class="btn btn-small">📋 Kodu Kopyala</button>
+    </div>
+    
+    <!-- Oyun Ekranı -->
+    <div id="game-screen" class="screen hidden">
+      <div class="game-header">
+        <div class="player-info player-info-left">
+          <span class="player-label" id="my-name">Ben</span>
+          <span class="player-score" id="my-score">0</span>
+        </div>
+        <div class="vs-game">VS</div>
+        <div class="player-info player-info-right">
+          <span class="player-label" id="opponent-name">Rakip</span>
+          <span class="player-score" id="opponent-score">0</span>
+        </div>
+      </div>
+      
+      <div class="game-main">
+        <div class="board-container my-board">
+          <canvas id="my-canvas"></canvas>
+        </div>
+        
+        <div class="side-panel">
+          <div class="next-piece-box">
+            <span class="next-label">SONRAKİ</span>
+            <canvas id="next-canvas"></canvas>
+          </div>
+          
+          <div class="opponent-box">
+            <span class="opponent-label" id="opponent-name-side">Rakip</span>
+            <div class="opponent-board-wrapper">
+              <canvas id="opponent-canvas"></canvas>
+              <div class="opponent-overlay" id="opponent-status"></div>
+            </div>
+            <span class="opponent-score-side" id="opponent-score-side">0</span>
+          </div>
+        </div>
+      </div>
+      
+      <div id="controls">
+        <button id="btn-left">◀</button>
+        <button id="btn-rotate">↻</button>
+        <button id="btn-down">▼</button>
+        <button id="btn-right">▶</button>
+      </div>
+      
+      <div id="waiting-overlay" class="waiting-overlay hidden">
+        <div class="waiting-content">
+          <p>OYUNUN BİTTİ!</p>
+          <p class="waiting-score">Skorun: <span id="waiting-score-value">0</span></p>
+          <div class="waiting-spinner"></div>
+          <p class="waiting-text">Rakip bekleniyor...</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Sonuç Ekranı -->
+    <div id="result-screen" class="screen hidden">
+      <h2 id="result-title">OYUN BİTTİ</h2>
+      <div class="result-scores">
+        <div class="result-player">
+          <span class="result-name" id="result-p1-name"></span>
+          <span class="result-score" id="result-p1-score"></span>
+        </div>
+        <div class="result-vs">-</div>
+        <div class="result-player">
+          <span class="result-name" id="result-p2-name"></span>
+          <span class="result-score" id="result-p2-score"></span>
+        </div>
+      </div>
+      <button id="play-again-btn" class="btn btn-primary">🔄 YENİDEN OYNA</button>
+      <button id="back-menu-btn" class="btn btn-secondary">🏠 ANA MENÜ</button>
+    </div>
+    
+    <!-- Bağlantı Hatası -->
+    <div id="error-modal" class="modal hidden">
+      <div class="modal-content">
+        <p id="error-message"></p>
+        <button id="error-close-btn" class="btn btn-primary">TAMAM</button>
+      </div>
+    </div>
+  </div>
+  
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
