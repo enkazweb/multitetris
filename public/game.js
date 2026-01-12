@@ -231,6 +231,11 @@ let lastDrop = 0;
 let gameSeed = 0;
 let pieceIndex = 0;
 
+// Soft drop (hızlı düşme) için
+let isSoftDropping = false;
+const SOFT_DROP_INTERVAL = 50; // 50ms - çok hızlı
+const NORMAL_DROP_INTERVAL = 1000;
+
 // Satır silme efekti için
 let clearingLines = [];
 let clearAnimationFrame = 0;
@@ -412,6 +417,11 @@ function moveDown() {
   if (isClearing) return false;
   if (!collision(currentPos.x, currentPos.y + 1)) {
     currentPos.y++;
+    // Soft drop sırasında bonus puan
+    if (isSoftDropping) {
+      score += 1;
+      document.getElementById('my-score').textContent = score;
+    }
     sendGameUpdate();
     return true;
   }
@@ -444,6 +454,25 @@ function drop() {
       resetPiece();
       sendGameUpdate();
     }
+  }
+}
+
+// Hard drop - anında en aşağı düşür (Space tuşu)
+function hardDrop() {
+  if (isClearing) return;
+  let dropDistance = 0;
+  while (!collision(currentPos.x, currentPos.y + 1)) {
+    currentPos.y++;
+    dropDistance++;
+  }
+  // Hard drop bonus puanı (her kare için 2 puan)
+  score += dropDistance * 2;
+  document.getElementById('my-score').textContent = score;
+  playDropSound();
+  merge();
+  if (!clearLinesWithAnimation()) {
+    resetPiece();
+    sendGameUpdate();
   }
 }
 
@@ -845,18 +874,63 @@ document.getElementById('error-close-btn').addEventListener('click', () => {
 // Oyun kontrolleri
 document.getElementById('btn-left').addEventListener('click', () => gameStarted && !gameOver && !isClearing && moveLeft());
 document.getElementById('btn-right').addEventListener('click', () => gameStarted && !gameOver && !isClearing && moveRight());
-document.getElementById('btn-down').addEventListener('click', () => gameStarted && !gameOver && !isClearing && drop());
 document.getElementById('btn-rotate').addEventListener('click', () => gameStarted && !gameOver && !isClearing && rotatePiece());
 
-// Klavye
+// Mobil aşağı butonu - soft drop (basılı tutunca hızlı düşer)
+const btnDown = document.getElementById('btn-down');
+btnDown.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  if (!gameStarted || gameOver || isClearing) return;
+  isSoftDropping = true;
+  dropInterval = SOFT_DROP_INTERVAL;
+  lastDrop = 0;
+});
+btnDown.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  isSoftDropping = false;
+  dropInterval = NORMAL_DROP_INTERVAL;
+});
+btnDown.addEventListener('mousedown', () => {
+  if (!gameStarted || gameOver || isClearing) return;
+  isSoftDropping = true;
+  dropInterval = SOFT_DROP_INTERVAL;
+  lastDrop = 0;
+});
+btnDown.addEventListener('mouseup', () => {
+  isSoftDropping = false;
+  dropInterval = NORMAL_DROP_INTERVAL;
+});
+btnDown.addEventListener('mouseleave', () => {
+  isSoftDropping = false;
+  dropInterval = NORMAL_DROP_INTERVAL;
+});
+
+// Klavye - keydown
 document.addEventListener('keydown', (e) => {
   if (!gameStarted || gameOver || isClearing) return;
   
   switch(e.key) {
     case 'ArrowLeft': moveLeft(); e.preventDefault(); break;
     case 'ArrowRight': moveRight(); e.preventDefault(); break;
-    case 'ArrowDown': drop(); e.preventDefault(); break;
+    case 'ArrowDown': 
+      // Soft drop - hızlı düşme
+      if (!isSoftDropping) {
+        isSoftDropping = true;
+        dropInterval = SOFT_DROP_INTERVAL;
+        lastDrop = 0; // Hemen düşmeye başla
+      }
+      e.preventDefault(); 
+      break;
     case 'ArrowUp': rotatePiece(); e.preventDefault(); break;
+    case ' ': hardDrop(); e.preventDefault(); break; // Space ile anında düşür
+  }
+});
+
+// Klavye - keyup (soft drop bitişi)
+document.addEventListener('keyup', (e) => {
+  if (e.key === 'ArrowDown') {
+    isSoftDropping = false;
+    dropInterval = NORMAL_DROP_INTERVAL;
   }
 });
 
