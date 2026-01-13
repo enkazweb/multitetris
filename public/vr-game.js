@@ -299,11 +299,87 @@ let dropInterval = 1000;
 let lastDrop = 0;
 let gameSeed = 0;
 let pieceIndex = 0;
+let pendingGameSeed = null;
 
 // VR Soft drop
 let isSoftDropping = false;
 const SOFT_DROP_INTERVAL = 50;
 const NORMAL_DROP_INTERVAL = 1000;
+
+// ==================== VR GİRİŞ BUTONU ====================
+function showVREntryButton() {
+  // UI Overlay'i göster
+  const uiOverlay = document.getElementById('ui-overlay');
+  if (uiOverlay) {
+    uiOverlay.classList.remove('hidden');
+    uiOverlay.innerHTML = `
+      <div style="text-align: center;">
+        <div class="vr-logo">🎮 OYUN HAZIR!</div>
+        <div class="vr-subtitle">Her iki oyuncu da hazır</div>
+        <button id="enter-vr-btn" class="vr-btn" style="
+          font-size: 28px;
+          padding: 25px 60px;
+          background: linear-gradient(180deg, #00ff00, #00aa00);
+          border: none;
+          border-radius: 15px;
+          color: white;
+          cursor: pointer;
+          margin-top: 30px;
+          animation: pulse 1.5s infinite;
+        ">
+          🥽 VR'A GİR VE OYNA
+        </button>
+        <p style="color: #888; margin-top: 20px; font-size: 14px;">
+          Meta Quest: Bu butona tıklayarak VR moduna geçin
+        </p>
+      </div>
+      <style>
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(0,255,0,0.5); }
+          50% { transform: scale(1.05); box-shadow: 0 0 40px rgba(0,255,0,0.8); }
+        }
+      </style>
+    `;
+    
+    // Butona click listener ekle
+    setTimeout(() => {
+      const vrBtn = document.getElementById('enter-vr-btn');
+      if (vrBtn) {
+        vrBtn.addEventListener('click', startGameWithVR);
+      }
+    }, 100);
+  }
+}
+
+function startGameWithVR() {
+  console.log('🥽 VR moduna giriliyor...');
+  
+  // VR moduna geç
+  const scene = document.querySelector('a-scene');
+  if (scene && scene.enterVR) {
+    scene.enterVR().then(() => {
+      console.log('✅ VR moduna girildi');
+      hideAllOverlays();
+      if (pendingGameSeed !== null) {
+        initGame(pendingGameSeed);
+        pendingGameSeed = null;
+      }
+    }).catch(err => {
+      console.log('⚠️ VR modu başlatılamadı, normal modda devam:', err);
+      hideAllOverlays();
+      if (pendingGameSeed !== null) {
+        initGame(pendingGameSeed);
+        pendingGameSeed = null;
+      }
+    });
+  } else {
+    hideAllOverlays();
+    if (pendingGameSeed !== null) {
+      initGame(pendingGameSeed);
+      pendingGameSeed = null;
+    }
+  }
+}
 
 // UI Elements
 const uiOverlay = document.getElementById('ui-overlay');
@@ -898,8 +974,6 @@ socket.on('playerUpdate', (data) => {
 });
 
 socket.on('gameStart', (data) => {
-  hideAllOverlays();
-  
   // İsimleri ayarla
   const myNameText = document.getElementById('my-name-text');
   const oppNameText = document.getElementById('opponent-name-text');
@@ -907,20 +981,23 @@ socket.on('gameStart', (data) => {
   if (myNameText) myNameText.setAttribute('value', playerName || 'Ben');
   if (oppNameText) oppNameText.setAttribute('value', opponentName || 'Rakip');
   
-  // OTOMATİK VR MODUNA GEÇ
-  enterVRMode();
+  // Seed'i sakla
+  pendingGameSeed = data.seed;
   
-  initGame(data.seed);
+  // VR MODUNA GEÇİŞ BUTONU GÖSTER
+  showVREntryButton();
 });
 
-// Oyun yeniden başladı (rematch)
+// Oyun yeniden başladı (rematch) - VR'da zaten olduğumuz için doğrudan başla
 socket.on('gameRestart', (data) => {
   hideWaitingPanel();
   hideGameOverPanel();
+  hideAllOverlays();
   
   const rematchStatus = document.getElementById('rematch-status');
   if (rematchStatus) rematchStatus.setAttribute('visible', 'false');
   
+  // VR modundaysak doğrudan başla
   initGame(data.seed);
 });
 
@@ -1266,29 +1343,54 @@ function createFloatingTetrisBlocks() {
   const scene = document.querySelector('a-scene');
   if (!scene) return;
   
-  // Yüzen Tetris parçaları - SADECE SAĞDA, SOLDA ve ARKADA (önde değil!)
-  const floatingPieces = [
-    // SOL TARAF (x: -6 ile -10 arası)
-    { piece: PIECES[0], color: 1, pos: [-7, 2, -4], rot: [15, 45, 0], scale: 0.4 },
-    { piece: PIECES[2], color: 3, pos: [-8, 4, -2], rot: [0, 60, -15], scale: 0.35 },
-    { piece: PIECES[4], color: 5, pos: [-6, 1, 0], rot: [-20, 30, 25], scale: 0.3 },
-    { piece: PIECES[6], color: 7, pos: [-9, 3, -6], rot: [5, 45, -30], scale: 0.45 },
-    { piece: PIECES[1], color: 2, pos: [-7, 5, 2], rot: [10, -20, 15], scale: 0.35 },
+  // 360 DERECE - TÜM YÖNLERDE YÜZEN TETRİS PARÇALARI
+  const floatingPieces = [];
+  
+  // 360 derece etrafta dağıt
+  const numPieces = 40; // Toplam parça sayısı
+  const radius = 8; // Merkeze uzaklık
+  
+  for (let i = 0; i < numPieces; i++) {
+    const angle = (i / numPieces) * Math.PI * 2; // 360 derece dağılım
+    const heightVariation = Math.random() * 6 - 1; // -1 ile 5 arası yükseklik
+    const radiusVariation = radius + (Math.random() - 0.5) * 4; // 6-10 arası mesafe
     
-    // SAĞ TARAF (x: 6 ile 10 arası)
-    { piece: PIECES[1], color: 2, pos: [7, 2.5, -3], rot: [-10, -30, 20], scale: 0.4 },
-    { piece: PIECES[3], color: 4, pos: [8, 4, -1], rot: [25, -45, 10], scale: 0.35 },
-    { piece: PIECES[5], color: 6, pos: [6, 1, 1], rot: [10, -60, 0], scale: 0.3 },
-    { piece: PIECES[0], color: 1, pos: [9, 3.5, -5], rot: [30, 20, 15], scale: 0.45 },
-    { piece: PIECES[2], color: 3, pos: [7, 5, 3], rot: [-15, -20, 40], scale: 0.35 },
+    // X ve Z koordinatları (dairesel dağılım)
+    const x = Math.cos(angle) * radiusVariation;
+    const z = Math.sin(angle) * radiusVariation;
+    const y = 1 + heightVariation;
     
-    // ARKA TARAF (z: 3 ile 10 arası, x: -5 ile 5 arası)
-    { piece: PIECES[4], color: 5, pos: [-3, 3, 6], rot: [20, 0, -20], scale: 0.5 },
-    { piece: PIECES[6], color: 7, pos: [3, 2, 5], rot: [-10, 45, 15], scale: 0.4 },
-    { piece: PIECES[1], color: 2, pos: [0, 4, 8], rot: [15, -30, 25], scale: 0.55 },
-    { piece: PIECES[3], color: 4, pos: [-4, 5, 7], rot: [5, 60, -10], scale: 0.45 },
-    { piece: PIECES[5], color: 6, pos: [4, 1, 6], rot: [-20, -45, 30], scale: 0.35 },
-  ];
+    // Rastgele parça tipi
+    const pieceType = Math.floor(Math.random() * PIECES.length);
+    const colorType = pieceType + 1;
+    
+    floatingPieces.push({
+      piece: PIECES[pieceType],
+      color: colorType,
+      pos: [x, y, z],
+      rot: [Math.random() * 360, Math.random() * 360, Math.random() * 360],
+      scale: 0.25 + Math.random() * 0.3
+    });
+  }
+  
+  // Ek olarak yukarıda da parçalar ekle
+  for (let i = 0; i < 15; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const r = 5 + Math.random() * 10;
+    const x = Math.cos(angle) * r;
+    const z = Math.sin(angle) * r;
+    const y = 6 + Math.random() * 4; // Yukarıda
+    
+    const pieceType = Math.floor(Math.random() * PIECES.length);
+    
+    floatingPieces.push({
+      piece: PIECES[pieceType],
+      color: pieceType + 1,
+      pos: [x, y, z],
+      rot: [Math.random() * 360, Math.random() * 360, Math.random() * 360],
+      scale: 0.2 + Math.random() * 0.25
+    });
+  }
   
   floatingPieces.forEach((fp, index) => {
     const entity = document.createElement('a-entity');
@@ -1307,11 +1409,9 @@ function createFloatingTetrisBlocks() {
           block.setAttribute('height', size * 0.9);
           block.setAttribute('depth', size * 0.9);
           block.setAttribute('material', `
+            shader: flat;
             color: ${COLORS[fp.color]}; 
-            emissive: ${COLORS[fp.color]}; 
-            emissiveIntensity: 0.4;
-            opacity: 0.7;
-            transparent: true
+            opacity: 0.6
           `);
           entity.appendChild(block);
         }
@@ -1319,19 +1419,21 @@ function createFloatingTetrisBlocks() {
     });
     
     // Dönen animasyon
-    const rotSpeed = 5000 + Math.random() * 10000;
-    const rotAxis = ['0 360 0', '360 0 0', '0 0 360'][index % 3];
+    const rotSpeed = 8000 + Math.random() * 15000;
+    const rotX = Math.random() * 360;
+    const rotY = Math.random() * 360;
+    const rotZ = Math.random() * 360;
     entity.setAttribute('animation__rotate', `
       property: rotation;
-      to: ${parseInt(fp.rot[0]) + parseInt(rotAxis.split(' ')[0])} ${parseInt(fp.rot[1]) + parseInt(rotAxis.split(' ')[1])} ${parseInt(fp.rot[2]) + parseInt(rotAxis.split(' ')[2])};
+      to: ${rotX} ${rotY} ${rotZ};
       dur: ${rotSpeed};
       easing: linear;
       loop: true
     `);
     
     // Yukarı aşağı hareket
-    const floatSpeed = 3000 + Math.random() * 4000;
-    const floatDist = 0.3 + Math.random() * 0.5;
+    const floatSpeed = 4000 + Math.random() * 6000;
+    const floatDist = 0.5 + Math.random() * 1;
     entity.setAttribute('animation__float', `
       property: position;
       to: ${fp.pos[0]} ${fp.pos[1] + floatDist} ${fp.pos[2]};
@@ -1343,6 +1445,8 @@ function createFloatingTetrisBlocks() {
     
     scene.appendChild(entity);
   });
+  
+  console.log(`🎲 360° yüzen Tetris blokları oluşturuldu: ${floatingPieces.length} adet`);
 }
 
 function createGridFloor() {
@@ -1494,33 +1598,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ==================== VR BUTON EVENT LİSTENER'LARI ====================
 function setupVRButtonListeners() {
-  // Tekrar Oyna butonu
+  // Tekrar Oyna butonu (artık doğrudan a-box)
   const playAgainBtn = document.getElementById('play-again-btn-vr');
   if (playAgainBtn) {
     // A-Frame click event
     playAgainBtn.addEventListener('click', handlePlayAgain);
     
-    // VR Controller trigger events
-    playAgainBtn.addEventListener('raycaster-intersected', (e) => {
-      playAgainBtn.querySelector('a-box').setAttribute('material', 'color: #33ff33; emissive: #33ff33; emissiveIntensity: 0.8');
+    // Hover efektleri
+    playAgainBtn.addEventListener('mouseenter', () => {
+      playAgainBtn.setAttribute('material', 'shader: flat; color: #33ff33; opacity: 1');
     });
-    playAgainBtn.addEventListener('raycaster-intersected-cleared', (e) => {
-      playAgainBtn.querySelector('a-box').setAttribute('material', 'color: #00ff00; emissive: #00ff00; emissiveIntensity: 0.5');
+    playAgainBtn.addEventListener('mouseleave', () => {
+      playAgainBtn.setAttribute('material', 'shader: flat; color: #00ff00; opacity: 1');
+    });
+    
+    // Raycaster intersection
+    playAgainBtn.addEventListener('raycaster-intersected', () => {
+      playAgainBtn.setAttribute('material', 'shader: flat; color: #33ff33; opacity: 1');
+    });
+    playAgainBtn.addEventListener('raycaster-intersected-cleared', () => {
+      playAgainBtn.setAttribute('material', 'shader: flat; color: #00ff00; opacity: 1');
     });
   }
   
-  // Çıkış butonu
+  // Çıkış butonu (artık doğrudan a-box)
   const exitBtn = document.getElementById('exit-btn-vr');
   if (exitBtn) {
     // A-Frame click event
     exitBtn.addEventListener('click', handleExitGame);
     
-    // VR Controller hover events
-    exitBtn.addEventListener('raycaster-intersected', (e) => {
-      exitBtn.querySelector('a-box').setAttribute('material', 'color: #ff5555; emissive: #ff5555; emissiveIntensity: 0.8');
+    // Hover efektleri
+    exitBtn.addEventListener('mouseenter', () => {
+      exitBtn.setAttribute('material', 'shader: flat; color: #ff5555; opacity: 1');
     });
-    exitBtn.addEventListener('raycaster-intersected-cleared', (e) => {
-      exitBtn.querySelector('a-box').setAttribute('material', 'color: #ff3333; emissive: #ff3333; emissiveIntensity: 0.5');
+    exitBtn.addEventListener('mouseleave', () => {
+      exitBtn.setAttribute('material', 'shader: flat; color: #ff3333; opacity: 1');
+    });
+    
+    // Raycaster intersection
+    exitBtn.addEventListener('raycaster-intersected', () => {
+      exitBtn.setAttribute('material', 'shader: flat; color: #ff5555; opacity: 1');
+    });
+    exitBtn.addEventListener('raycaster-intersected-cleared', () => {
+      exitBtn.setAttribute('material', 'shader: flat; color: #ff3333; opacity: 1');
     });
   }
   
@@ -1534,20 +1654,40 @@ function setupVRButtonListeners() {
     }
   });
   
+  // Cursor click event
+  const cursor = document.getElementById('cursor');
+  if (cursor) {
+    cursor.addEventListener('click', handleCursorClick);
+  }
+  
   console.log('🎮 VR buton event listener\'ları kuruldu');
+}
+
+// Cursor click
+function handleCursorClick(e) {
+  const target = e.detail.intersectedEl;
+  if (!target) return;
+  
+  if (target.id === 'play-again-btn-vr') {
+    handlePlayAgain();
+  } else if (target.id === 'exit-btn-vr') {
+    handleExitGame();
+  }
 }
 
 // VR Controller trigger basıldığında
 function handleVRTrigger(e) {
-  const intersectedEls = e.target.components.raycaster.intersectedEls;
+  const raycaster = e.target.components.raycaster;
+  if (!raycaster) return;
+  
+  const intersectedEls = raycaster.intersectedEls;
   
   if (intersectedEls && intersectedEls.length > 0) {
     const target = intersectedEls[0];
-    const parent = target.parentElement;
     
-    if (parent && parent.id === 'play-again-btn-vr') {
+    if (target.id === 'play-again-btn-vr') {
       handlePlayAgain();
-    } else if (parent && parent.id === 'exit-btn-vr') {
+    } else if (target.id === 'exit-btn-vr') {
       handleExitGame();
     }
   }

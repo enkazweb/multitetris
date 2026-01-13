@@ -276,13 +276,13 @@
       
       <!-- Benim Board'um (Sol) - Hafif açılı 3D perspektif -->
       <a-entity id="my-board-container" position="-1.2 0 0" rotation="0 15 0">
-        <!-- Board arka planı - Derin kutu -->
+        <!-- Board arka planı - Düz, temiz yüzey -->
         <a-box 
           id="my-board-bg"
           width="1.1" 
           height="2.2" 
           depth="0.25"
-          material="color: #0a0a14; opacity: 0.95; transparent: true"
+          material="shader: flat; color: #0a0a14; opacity: 1"
           position="0 0 -0.125">
         </a-box>
         <!-- İç derinlik katmanı -->
@@ -290,7 +290,7 @@
           width="1.05" 
           height="2.15" 
           depth="0.02"
-          material="color: #050508; opacity: 1"
+          material="shader: flat; color: #050508; opacity: 1"
           position="0 0 -0.01">
         </a-box>
         <!-- Board çerçevesi - Neon -->
@@ -298,7 +298,7 @@
           width="1.15" 
           height="2.25" 
           depth="0.28"
-          material="color: #00f5ff; emissive: #00f5ff; emissiveIntensity: 0.5; opacity: 0.2; transparent: true"
+          material="shader: flat; color: #00f5ff; opacity: 0.15"
           position="0 0 -0.14">
         </a-box>
         <!-- Üst kenar glow -->
@@ -306,7 +306,7 @@
           width="1.12" 
           height="0.02" 
           depth="0.26"
-          material="color: #00f5ff; emissive: #00f5ff; emissiveIntensity: 1"
+          material="shader: flat; color: #00ffff; opacity: 1"
           position="0 1.12 -0.13">
         </a-box>
         <!-- Alt kenar glow -->
@@ -314,7 +314,7 @@
           width="1.12" 
           height="0.02" 
           depth="0.26"
-          material="color: #00f5ff; emissive: #00f5ff; emissiveIntensity: 1"
+          material="shader: flat; color: #00ffff; opacity: 1"
           position="0 -1.12 -0.13">
         </a-box>
         <!-- 3D Bloklar buraya eklenecek -->
@@ -322,23 +322,25 @@
         <!-- Mevcut parça -->
         <a-entity id="my-current-piece"></a-entity>
         
-        <!-- İsim ve Skor - DAHA NET -->
+        <!-- İsim ve Skor - DAHA BÜYÜK VE OKUNAKLI -->
         <a-text 
           id="my-name-text"
           value="Ben" 
-          position="0 1.35 0.1" 
+          position="0 1.4 0.1" 
           align="center" 
-          color="#00f5ff"
-          width="4"
+          color="#00ffff"
+          width="6"
+          scale="1.2 1.2 1.2"
           font="mozillavr">
         </a-text>
         <a-text 
           id="my-score-text"
           value="0" 
-          position="0 1.18 0.1" 
+          position="0 1.2 0.1" 
           align="center" 
           color="#ffffff"
-          width="5"
+          width="7"
+          scale="1.3 1.3 1.3"
           font="mozillavr">
         </a-text>
       </a-entity>
@@ -355,13 +357,13 @@
       
       <!-- Rakip Board'u (Sağ) - Hafif açılı 3D perspektif -->
       <a-entity id="opponent-board-container" position="1.2 0 0" rotation="0 -15 0">
-        <!-- Board arka planı - Derin kutu -->
+        <!-- Board arka planı - Düz, temiz yüzey -->
         <a-box 
           id="opponent-board-bg"
           width="1.1" 
           height="2.2" 
           depth="0.25"
-          material="color: #0a0a14; opacity: 0.95; transparent: true"
+          material="shader: flat; color: #0a0a14; opacity: 1"
           position="0 0 -0.125">
         </a-box>
         <!-- İç derinlik katmanı -->
@@ -369,7 +371,7 @@
           width="1.05" 
           height="2.15" 
           depth="0.02"
-          material="color: #050508; opacity: 1"
+          material="shader: flat; color: #050508; opacity: 1"
           position="0 0 -0.01">
         </a-box>
         <!-- Board çerçevesi - Neon -->
@@ -377,7 +379,7 @@
           width="1.15" 
           height="2.25" 
           depth="0.28"
-          material="color: #ff6b6b; emissive: #ff6b6b; emissiveIntensity: 0.5; opacity: 0.2; transparent: true"
+          material="shader: flat; color: #ff6b6b; opacity: 0.15"
           position="0 0 -0.14">
         </a-box>
         <!-- Üst kenar glow -->
@@ -385,7 +387,7 @@
           width="1.12" 
           height="0.02" 
           depth="0.26"
-          material="color: #ff6b6b; emissive: #ff6b6b; emissiveIntensity: 1"
+          material="shader: flat; color: #ff6b6b; opacity: 1"
           position="0 1.12 -0.13">
         </a-box>
         <!-- Alt kenar glow -->
@@ -393,7 +395,7 @@
           width="1.12" 
           height="0.02" 
           depth="0.26"
-          material="color: #ff6b6b; emissive: #ff6b6b; emissiveIntensity: 1"
+          material="shader: flat; color: #ff6b6b; opacity: 1"
           position="0 -1.12 -0.13">
         </a-box>
         <!-- 3D Bloklar buraya eklenecek -->
@@ -407,34 +409,37 @@
             width="1" 
             height="0.3" 
             depth="0.02"
-            material="color: #000000; opacity: 0.9; transparent: true">
+            material="shader: flat; color: #000000; opacity: 0.9">
           </a-box>
           <a-text 
             value="OYUN BITTI" 
             position="0 0 0.02" 
             align="center" 
             color="#ff6b6b"
-            width="2.5">
+            width="3.5"
+            scale="1.2 1.2 1.2">
           </a-text>
         </a-entity>
         
-        <!-- İsim ve Skor - DAHA NET -->
+        <!-- İsim ve Skor - DAHA BÜYÜK VE OKUNAKLI -->
         <a-text 
           id="opponent-name-text"
           value="Rakip" 
-          position="0 1.35 0.1" 
+          position="0 1.4 0.1" 
           align="center" 
           color="#ff6b6b"
-          width="4"
+          width="6"
+          scale="1.2 1.2 1.2"
           font="mozillavr">
         </a-text>
         <a-text 
           id="opponent-score-text"
           value="0" 
-          position="0 1.18 0.1" 
+          position="0 1.2 0.1" 
           align="center" 
           color="#ffffff"
-          width="5"
+          width="7"
+          scale="1.3 1.3 1.3"
           font="mozillavr">
         </a-text>
       </a-entity>
@@ -576,112 +581,119 @@
     </a-entity>
     
     <!-- Oyun Sonu Paneli - DAHA BÜYÜK VE OKUNAKLI -->
-    <a-entity id="game-over-panel" position="0 1.6 -1.8" visible="false">
+    <a-entity id="game-over-panel" position="0 1.6 -1.5" visible="false">
       <a-box 
-        width="2.5" 
-        height="2.4" 
+        width="3" 
+        height="2.8" 
         depth="0.15"
-        material="color: #0a0a1a; opacity: 0.98; transparent: true">
+        material="shader: flat; color: #0a0a1a; opacity: 0.98">
       </a-box>
       <!-- Neon çerçeve -->
       <a-box 
-        width="2.55" 
-        height="2.45" 
+        width="3.05" 
+        height="2.85" 
         depth="0.08"
-        material="color: #00f5ff; emissive: #00f5ff; emissiveIntensity: 0.8; opacity: 0.4; transparent: true"
+        material="shader: flat; color: #00f5ff; opacity: 0.4"
         position="0 0 -0.04">
       </a-box>
       <!-- Sonuç başlığı -->
       <a-text 
         id="result-text"
         value="OYUN BITTI" 
-        position="0 0.8 0.08" 
+        position="0 1.0 0.1" 
         align="center" 
         color="#ffffff"
-        width="8"
+        width="12"
+        scale="1.5 1.5 1.5"
         font="mozillavr">
       </a-text>
       <!-- Skorlar -->
       <a-text 
         id="final-scores-text"
         value="" 
-        position="0 0.35 0.08" 
+        position="0 0.5 0.1" 
         align="center" 
         color="#ffd93d"
-        width="6"
+        width="10"
+        scale="1.3 1.3 1.3"
         font="mozillavr">
       </a-text>
       <!-- Ayırıcı çizgi -->
       <a-box 
-        position="0 0 0.08"
-        width="2" 
-        height="0.01" 
+        position="0 0.1 0.1"
+        width="2.5" 
+        height="0.02" 
         depth="0.01"
-        material="color: #00f5ff; emissive: #00f5ff; emissiveIntensity: 1">
+        material="shader: flat; color: #00ffff; opacity: 1">
       </a-box>
       <!-- Developer Credit -->
-      <a-entity id="developer-credit" position="0 -0.25 0.08" visible="true">
+      <a-entity id="developer-credit" position="0 -0.2 0.1" visible="true">
         <a-text 
           value="Gelistiren:" 
-          position="0 0.1 0" 
+          position="0 0.12 0" 
           align="center" 
           color="#aaaaaa"
-          width="3">
+          width="5"
+          scale="1.1 1.1 1.1">
         </a-text>
         <a-text 
           value="Cem YILDIRIM" 
-          position="0 -0.08 0" 
+          position="0 -0.1 0" 
           align="center" 
-          color="#00f5ff"
-          width="4"
+          color="#00ffff"
+          width="7"
+          scale="1.2 1.2 1.2"
           font="mozillavr">
         </a-text>
       </a-entity>
       
-      <!-- TEKRAR OYNA BUTONU -->
-      <a-entity id="play-again-btn-vr" position="-0.55 -0.7 0.08" class="clickable">
-        <a-box 
-          width="0.9" 
-          height="0.3" 
-          depth="0.05"
-          material="color: #00ff00; emissive: #00ff00; emissiveIntensity: 0.5"
-          class="clickable">
-        </a-box>
-        <a-text 
-          value="TEKRAR OYNA" 
-          position="0 0 0.03" 
-          align="center" 
-          color="#000000"
-          width="3.5">
-        </a-text>
-      </a-entity>
+      <!-- TEKRAR OYNA BUTONU - Interactive -->
+      <a-box 
+        id="play-again-btn-vr"
+        position="-0.6 -0.7 0.1"
+        width="1.1" 
+        height="0.4" 
+        depth="0.08"
+        material="shader: flat; color: #00ff00; opacity: 1"
+        class="clickable interactive-btn">
+      </a-box>
+      <a-text 
+        value="TEKRAR OYNA" 
+        position="-0.6 -0.7 0.15" 
+        align="center" 
+        color="#000000"
+        width="5"
+        scale="1.2 1.2 1.2">
+      </a-text>
       
-      <!-- ÇIKIŞ BUTONU -->
-      <a-entity id="exit-btn-vr" position="0.55 -0.7 0.08" class="clickable">
-        <a-box 
-          width="0.9" 
-          height="0.3" 
-          depth="0.05"
-          material="color: #ff3333; emissive: #ff3333; emissiveIntensity: 0.5"
-          class="clickable">
-        </a-box>
-        <a-text 
-          value="CIKIS" 
-          position="0 0 0.03" 
-          align="center" 
-          color="#ffffff"
-          width="3.5">
-        </a-text>
-      </a-entity>
+      <!-- ÇIKIŞ BUTONU - Interactive -->
+      <a-box 
+        id="exit-btn-vr"
+        position="0.6 -0.7 0.1"
+        width="1.1" 
+        height="0.4" 
+        depth="0.08"
+        material="shader: flat; color: #ff3333; opacity: 1"
+        class="clickable interactive-btn">
+      </a-box>
+      <a-text 
+        value="CIKIS" 
+        position="0.6 -0.7 0.15" 
+        align="center" 
+        color="#ffffff"
+        width="5"
+        scale="1.2 1.2 1.2">
+      </a-text>
       
       <!-- Bekleme durumu mesajı -->
       <a-text 
         id="rematch-status"
         value="" 
-        position="0 -1 0.08" 
+        position="0 -1.1 0.1" 
         align="center" 
         color="#ffd93d"
-        width="4"
+        width="6"
+        scale="1.1 1.1 1.1"
         visible="false">
       </a-text>
     </a-entity>
