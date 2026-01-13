@@ -1058,8 +1058,9 @@ document.getElementById('ready-btn').addEventListener('click', (e) => {
 });
 
 // ==================== VR KONTROLLER ====================
+// Klavye kontrolleri (PC test için)
 document.addEventListener('keydown', (e) => {
-  if (!gameStarted || gameOver) return;
+  if (!gameStarted || gameOver || isClearing) return;
   
   switch(e.key) {
     case 'ArrowLeft': moveLeft(); break;
@@ -1083,51 +1084,100 @@ document.addEventListener('keyup', (e) => {
   }
 });
 
-// VR Controller
+// ==================== META QUEST 3 KONTROLLER ====================
+// Sol Joystick: Sağa/Sola hareket
+// Sol Tetik: Döndürme
+// Sağ Tetik (basılı tut): Kademeli hızlı inme
+
+let rightTriggerPressed = false;
+let rightTriggerStartTime = 0;
+let softDropSpeedMultiplier = 1;
+
 document.addEventListener('DOMContentLoaded', () => {
+  // SOL CONTROLLER
   const leftHand = document.getElementById('left-hand');
   if (leftHand) {
     let lastMoveTime = 0;
-    const moveDelay = 120;
+    const moveDelay = 150; // Hareket gecikmesi
     
+    // Sol Joystick - Sağa/Sola hareket
     leftHand.addEventListener('thumbstickmoved', (e) => {
-      if (!gameStarted || gameOver) return;
+      if (!gameStarted || gameOver || isClearing) return;
       
       const now = Date.now();
       if (now - lastMoveTime < moveDelay) return;
       
       const x = e.detail.x;
-      const y = e.detail.y;
       
-      if (x < -0.5) { moveLeft(); lastMoveTime = now; }
-      if (x > 0.5) { moveRight(); lastMoveTime = now; }
-      
-      if (y > 0.5) {
-        if (!isSoftDropping) {
-          isSoftDropping = true;
-          dropInterval = SOFT_DROP_INTERVAL;
-        }
-      } else {
-        if (isSoftDropping) {
-          isSoftDropping = false;
-          dropInterval = NORMAL_DROP_INTERVAL;
-        }
+      if (x < -0.5) { 
+        moveLeft(); 
+        lastMoveTime = now; 
+      }
+      if (x > 0.5) { 
+        moveRight(); 
+        lastMoveTime = now; 
       }
     });
     
+    // Sol Tetik - Döndürme
     leftHand.addEventListener('triggerdown', () => {
-      if (gameStarted && !gameOver) rotatePiece();
+      if (gameStarted && !gameOver && !isClearing) {
+        rotatePiece();
+      }
     });
   }
   
+  // SAĞ CONTROLLER
   const rightHand = document.getElementById('right-hand');
   if (rightHand) {
+    // Sağ Tetik Basıldı - Kademeli hızlı inme başlat
     rightHand.addEventListener('triggerdown', () => {
-      if (gameStarted && !gameOver) hardDrop();
+      if (!gameStarted || gameOver || isClearing) return;
+      
+      rightTriggerPressed = true;
+      rightTriggerStartTime = Date.now();
+      softDropSpeedMultiplier = 1;
+      
+      // Kademeli hızlanma
+      const accelerate = () => {
+        if (!rightTriggerPressed || !gameStarted || gameOver) return;
+        
+        const holdTime = Date.now() - rightTriggerStartTime;
+        
+        // Basılı tutma süresine göre hız artır
+        if (holdTime < 200) {
+          // İlk 200ms - normal hız
+          dropInterval = NORMAL_DROP_INTERVAL;
+        } else if (holdTime < 500) {
+          // 200-500ms - orta hız
+          dropInterval = 300;
+        } else if (holdTime < 1000) {
+          // 500-1000ms - hızlı
+          dropInterval = 150;
+        } else {
+          // 1000ms+ - çok hızlı
+          dropInterval = 80;
+        }
+        
+        isSoftDropping = true;
+        requestAnimationFrame(accelerate);
+      };
+      
+      accelerate();
     });
     
+    // Sağ Tetik Bırakıldı - Normal hıza dön
+    rightHand.addEventListener('triggerup', () => {
+      rightTriggerPressed = false;
+      isSoftDropping = false;
+      dropInterval = NORMAL_DROP_INTERVAL;
+    });
+    
+    // A Butonu - Döndürme (alternatif)
     rightHand.addEventListener('abuttondown', () => {
-      if (gameStarted && !gameOver) rotatePiece();
+      if (gameStarted && !gameOver && !isClearing) {
+        rotatePiece();
+      }
     });
   }
 });
@@ -1143,19 +1193,28 @@ function createFloatingTetrisBlocks() {
   const scene = document.querySelector('a-scene');
   if (!scene) return;
   
-  // Büyük yüzen Tetris parçaları
+  // Yüzen Tetris parçaları - SADECE SAĞDA, SOLDA ve ARKADA (önde değil!)
   const floatingPieces = [
-    { piece: PIECES[0], color: 1, pos: [-4, 3, -8], rot: [15, 45, 0], scale: 0.5 },
-    { piece: PIECES[1], color: 2, pos: [4, 2, -7], rot: [-10, -30, 20], scale: 0.4 },
-    { piece: PIECES[2], color: 3, pos: [-5, 1, -6], rot: [0, 60, -15], scale: 0.35 },
-    { piece: PIECES[3], color: 4, pos: [5, 4, -9], rot: [25, -45, 10], scale: 0.45 },
-    { piece: PIECES[4], color: 5, pos: [-3, 5, -10], rot: [-20, 30, 25], scale: 0.5 },
-    { piece: PIECES[5], color: 6, pos: [3, 0.5, -5], rot: [10, -60, 0], scale: 0.3 },
-    { piece: PIECES[6], color: 7, pos: [-6, 2.5, -7], rot: [5, 45, -30], scale: 0.4 },
-    // Daha fazla parça
-    { piece: PIECES[0], color: 1, pos: [6, 3.5, -11], rot: [30, 20, 15], scale: 0.6 },
-    { piece: PIECES[2], color: 3, pos: [-7, 4, -12], rot: [-15, -20, 40], scale: 0.55 },
-    { piece: PIECES[4], color: 5, pos: [0, 5.5, -14], rot: [20, 0, -20], scale: 0.7 },
+    // SOL TARAF (x: -6 ile -10 arası)
+    { piece: PIECES[0], color: 1, pos: [-7, 2, -4], rot: [15, 45, 0], scale: 0.4 },
+    { piece: PIECES[2], color: 3, pos: [-8, 4, -2], rot: [0, 60, -15], scale: 0.35 },
+    { piece: PIECES[4], color: 5, pos: [-6, 1, 0], rot: [-20, 30, 25], scale: 0.3 },
+    { piece: PIECES[6], color: 7, pos: [-9, 3, -6], rot: [5, 45, -30], scale: 0.45 },
+    { piece: PIECES[1], color: 2, pos: [-7, 5, 2], rot: [10, -20, 15], scale: 0.35 },
+    
+    // SAĞ TARAF (x: 6 ile 10 arası)
+    { piece: PIECES[1], color: 2, pos: [7, 2.5, -3], rot: [-10, -30, 20], scale: 0.4 },
+    { piece: PIECES[3], color: 4, pos: [8, 4, -1], rot: [25, -45, 10], scale: 0.35 },
+    { piece: PIECES[5], color: 6, pos: [6, 1, 1], rot: [10, -60, 0], scale: 0.3 },
+    { piece: PIECES[0], color: 1, pos: [9, 3.5, -5], rot: [30, 20, 15], scale: 0.45 },
+    { piece: PIECES[2], color: 3, pos: [7, 5, 3], rot: [-15, -20, 40], scale: 0.35 },
+    
+    // ARKA TARAF (z: 3 ile 10 arası, x: -5 ile 5 arası)
+    { piece: PIECES[4], color: 5, pos: [-3, 3, 6], rot: [20, 0, -20], scale: 0.5 },
+    { piece: PIECES[6], color: 7, pos: [3, 2, 5], rot: [-10, 45, 15], scale: 0.4 },
+    { piece: PIECES[1], color: 2, pos: [0, 4, 8], rot: [15, -30, 25], scale: 0.55 },
+    { piece: PIECES[3], color: 4, pos: [-4, 5, 7], rot: [5, 60, -10], scale: 0.45 },
+    { piece: PIECES[5], color: 6, pos: [4, 1, 6], rot: [-20, -45, 30], scale: 0.35 },
   ];
   
   floatingPieces.forEach((fp, index) => {
