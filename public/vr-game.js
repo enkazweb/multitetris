@@ -907,8 +907,74 @@ socket.on('gameStart', (data) => {
   if (myNameText) myNameText.setAttribute('value', playerName || 'Ben');
   if (oppNameText) oppNameText.setAttribute('value', opponentName || 'Rakip');
   
+  // OTOMATİK VR MODUNA GEÇ
+  enterVRMode();
+  
   initGame(data.seed);
 });
+
+// Oyun yeniden başladı (rematch)
+socket.on('gameRestart', (data) => {
+  hideWaitingPanel();
+  hideGameOverPanel();
+  
+  const rematchStatus = document.getElementById('rematch-status');
+  if (rematchStatus) rematchStatus.setAttribute('visible', 'false');
+  
+  initGame(data.seed);
+});
+
+// Rakip rematch istiyor
+socket.on('opponentWantsRematch', () => {
+  const rematchStatus = document.getElementById('rematch-status');
+  if (rematchStatus) {
+    rematchStatus.setAttribute('value', 'Rakip tekrar oynamak istiyor!');
+    rematchStatus.setAttribute('visible', 'true');
+  }
+});
+
+// Rematch bekleniyor
+socket.on('waitingForRematch', () => {
+  const rematchStatus = document.getElementById('rematch-status');
+  if (rematchStatus) {
+    rematchStatus.setAttribute('value', 'Rakip bekleniyor...');
+    rematchStatus.setAttribute('visible', 'true');
+  }
+});
+
+// Oyundan çıkış - Ana menüye dön ve VR'dan çık
+socket.on('exitToMenu', () => {
+  stopMusic();
+  exitVRMode();
+  
+  // Sayfayı yenile
+  setTimeout(() => {
+    location.reload();
+  }, 500);
+});
+
+// VR Moduna gir
+function enterVRMode() {
+  const scene = document.querySelector('a-scene');
+  if (scene && !scene.is('vr-mode')) {
+    // A-Frame VR moduna geçiş
+    if (scene.enterVR) {
+      scene.enterVR().catch(err => {
+        console.log('VR moduna otomatik geçilemedi:', err);
+      });
+    }
+  }
+}
+
+// VR Modundan çık
+function exitVRMode() {
+  const scene = document.querySelector('a-scene');
+  if (scene && scene.is('vr-mode')) {
+    if (scene.exitVR) {
+      scene.exitVR();
+    }
+  }
+}
 
 // RAKİP CANLI GÜNCELLEME
 socket.on('opponentUpdate', (data) => {
@@ -958,6 +1024,7 @@ socket.on('gameEnd', (data) => {
   const resultText = document.getElementById('result-text');
   const scoresText = document.getElementById('final-scores-text');
   const panel = document.getElementById('game-over-panel');
+  const rematchStatus = document.getElementById('rematch-status');
   
   if (resultText) {
     if (isDraw) {
@@ -976,6 +1043,12 @@ socket.on('gameEnd', (data) => {
     scoresText.setAttribute('value', 
       `${data.scores[0].name}: ${data.scores[0].score}\n${data.scores[1].name}: ${data.scores[1].score}`
     );
+  }
+  
+  // Rematch status'u sıfırla
+  if (rematchStatus) {
+    rematchStatus.setAttribute('value', '');
+    rematchStatus.setAttribute('visible', 'false');
   }
   
   if (panel) {
@@ -1412,9 +1485,99 @@ document.addEventListener('DOMContentLoaded', () => {
         
         console.log('📺 Çözünürlük artırıldı:', renderer.getPixelRatio());
       }
+      
+      // VR Buton Event Listener'ları kur
+      setupVRButtonListeners();
     });
   }
 });
+
+// ==================== VR BUTON EVENT LİSTENER'LARI ====================
+function setupVRButtonListeners() {
+  // Tekrar Oyna butonu
+  const playAgainBtn = document.getElementById('play-again-btn-vr');
+  if (playAgainBtn) {
+    // A-Frame click event
+    playAgainBtn.addEventListener('click', handlePlayAgain);
+    
+    // VR Controller trigger events
+    playAgainBtn.addEventListener('raycaster-intersected', (e) => {
+      playAgainBtn.querySelector('a-box').setAttribute('material', 'color: #33ff33; emissive: #33ff33; emissiveIntensity: 0.8');
+    });
+    playAgainBtn.addEventListener('raycaster-intersected-cleared', (e) => {
+      playAgainBtn.querySelector('a-box').setAttribute('material', 'color: #00ff00; emissive: #00ff00; emissiveIntensity: 0.5');
+    });
+  }
+  
+  // Çıkış butonu
+  const exitBtn = document.getElementById('exit-btn-vr');
+  if (exitBtn) {
+    // A-Frame click event
+    exitBtn.addEventListener('click', handleExitGame);
+    
+    // VR Controller hover events
+    exitBtn.addEventListener('raycaster-intersected', (e) => {
+      exitBtn.querySelector('a-box').setAttribute('material', 'color: #ff5555; emissive: #ff5555; emissiveIntensity: 0.8');
+    });
+    exitBtn.addEventListener('raycaster-intersected-cleared', (e) => {
+      exitBtn.querySelector('a-box').setAttribute('material', 'color: #ff3333; emissive: #ff3333; emissiveIntensity: 0.5');
+    });
+  }
+  
+  // VR Controller'lara trigger event listener ekle
+  const rightHand = document.getElementById('right-hand');
+  const leftHand = document.getElementById('left-hand');
+  
+  [rightHand, leftHand].forEach(hand => {
+    if (hand) {
+      hand.addEventListener('triggerdown', handleVRTrigger);
+    }
+  });
+  
+  console.log('🎮 VR buton event listener\'ları kuruldu');
+}
+
+// VR Controller trigger basıldığında
+function handleVRTrigger(e) {
+  const intersectedEls = e.target.components.raycaster.intersectedEls;
+  
+  if (intersectedEls && intersectedEls.length > 0) {
+    const target = intersectedEls[0];
+    const parent = target.parentElement;
+    
+    if (parent && parent.id === 'play-again-btn-vr') {
+      handlePlayAgain();
+    } else if (parent && parent.id === 'exit-btn-vr') {
+      handleExitGame();
+    }
+  }
+}
+
+// Tekrar Oyna işlevi
+function handlePlayAgain() {
+  console.log('🔄 Tekrar oyna istendi');
+  socket.emit('playAgain');
+  
+  const rematchStatus = document.getElementById('rematch-status');
+  if (rematchStatus) {
+    rematchStatus.setAttribute('value', 'Rakip bekleniyor...');
+    rematchStatus.setAttribute('visible', 'true');
+  }
+}
+
+// Çıkış işlevi
+function handleExitGame() {
+  console.log('🚪 Oyundan çıkış istendi');
+  socket.emit('exitGame');
+}
+
+// Game Over panelini gizle
+function hideGameOverPanel() {
+  const panel = document.getElementById('game-over-panel');
+  if (panel) {
+    panel.setAttribute('visible', 'false');
+  }
+}
 
 console.log('🥽 MultiTetris VR yüklendi!');
 console.log('🎵 Arcade müzik aktif');

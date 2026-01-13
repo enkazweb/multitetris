@@ -167,24 +167,51 @@ io.on('connection', (socket) => {
     }
   });
   
-  // Yeniden oyna
+  // Yeniden oyna - VR için hemen başlat
   socket.on('playAgain', () => {
     const room = rooms.get(socket.roomCode);
     if (!room) return;
     
-    // Reset
-    room.players.forEach(p => {
-      p.ready = false;
-      p.board = null;
-      p.score = 0;
-      p.gameOver = false;
-    });
-    room.started = false;
+    const player = room.players[socket.playerIndex];
+    if (player) {
+      player.wantsRematch = true;
+    }
     
-    io.to(socket.roomCode).emit('resetGame');
-    io.to(socket.roomCode).emit('playerUpdate', {
-      players: room.players.map(p => ({ name: p.name, ready: p.ready }))
-    });
+    // İki oyuncu da rematch istiyorsa hemen başlat
+    if (room.players.length === 2 && room.players.every(p => p.wantsRematch)) {
+      // Reset
+      room.players.forEach(p => {
+        p.ready = true;
+        p.board = null;
+        p.score = 0;
+        p.gameOver = false;
+        p.wantsRematch = false;
+      });
+      room.started = true;
+      room.startTime = Date.now();
+      
+      // Yeni seed ile oyunu başlat
+      const seed = Math.floor(Math.random() * 1000000);
+      io.to(socket.roomCode).emit('gameRestart', { seed });
+      console.log(`Oyun yeniden başladı: ${socket.roomCode}`);
+    } else {
+      // Rakip bekleniyor
+      socket.emit('waitingForRematch');
+      socket.to(socket.roomCode).emit('opponentWantsRematch');
+    }
+  });
+  
+  // Oyundan çıkış - Her iki oyuncuyu da ana menüye gönder
+  socket.on('exitGame', () => {
+    const room = rooms.get(socket.roomCode);
+    if (!room) return;
+    
+    // Her iki oyuncuya da çıkış bildirimi gönder
+    io.to(socket.roomCode).emit('exitToMenu');
+    
+    // Odayı sil
+    rooms.delete(socket.roomCode);
+    console.log(`Oyuncu çıktı, oda silindi: ${socket.roomCode}`);
   });
   
   // Bağlantı koptu
