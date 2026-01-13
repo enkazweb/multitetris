@@ -326,33 +326,37 @@
         <a-text 
           id="my-name-text"
           value="Ben" 
-          position="0 1.4 0.1" 
+          position="0 1.45 0.15" 
           align="center" 
           color="#00ffff"
-          width="6"
-          scale="1.2 1.2 1.2"
-          font="mozillavr">
+          width="8"
+          scale="1.5 1.5 1.5"
+          side="double"
+          baseline="center">
         </a-text>
         <a-text 
           id="my-score-text"
           value="0" 
-          position="0 1.2 0.1" 
+          position="0 1.25 0.15" 
           align="center" 
           color="#ffffff"
-          width="7"
-          scale="1.3 1.3 1.3"
-          font="mozillavr">
+          width="10"
+          scale="1.8 1.8 1.8"
+          side="double"
+          baseline="center">
         </a-text>
       </a-entity>
       
       <!-- VS Yazısı (Orta) -->
       <a-text 
         value="VS" 
-        position="0 0.5 0" 
+        position="0 0.5 0.1" 
         align="center" 
         color="#ffd93d"
-        width="5"
-        font="mozillavr">
+        width="8"
+        scale="2 2 2"
+        side="double"
+        baseline="center">
       </a-text>
       
       <!-- Rakip Board'u (Sağ) - Hafif açılı 3D perspektif -->
@@ -425,75 +429,81 @@
         <a-text 
           id="opponent-name-text"
           value="Rakip" 
-          position="0 1.4 0.1" 
+          position="0 1.45 0.15" 
           align="center" 
           color="#ff6b6b"
-          width="6"
-          scale="1.2 1.2 1.2"
-          font="mozillavr">
+          width="8"
+          scale="1.5 1.5 1.5"
+          side="double"
+          baseline="center">
         </a-text>
         <a-text 
           id="opponent-score-text"
           value="0" 
-          position="0 1.2 0.1" 
+          position="0 1.25 0.15" 
           align="center" 
           color="#ffffff"
-          width="7"
-          scale="1.3 1.3 1.3"
-          font="mozillavr">
+          width="10"
+          scale="1.8 1.8 1.8"
+          side="double"
+          baseline="center">
         </a-text>
       </a-entity>
       
       <!-- Benim Sonraki Parçam - DAHA BÜYÜK VE NET -->
       <a-entity id="next-piece-container" position="-2.2 0.5 0">
         <a-box 
-          width="0.6" 
-          height="0.6" 
+          width="0.7" 
+          height="0.7" 
           depth="0.12"
-          material="color: #0a0a14; opacity: 0.95; transparent: true">
+          material="shader: flat; color: #0a0a14; opacity: 0.95">
         </a-box>
         <a-box 
-          width="0.62" 
-          height="0.62" 
+          width="0.72" 
+          height="0.72" 
           depth="0.1"
-          material="color: #00f5ff; emissive: #00f5ff; emissiveIntensity: 0.6; opacity: 0.3; transparent: true"
+          material="shader: flat; color: #00f5ff; opacity: 0.3"
           position="0 0 -0.02">
         </a-box>
         <a-text 
           value="SIRADAKI" 
-          position="0 0.4 0.05" 
+          position="0 0.5 0.07" 
           align="center" 
           color="#00f5ff"
-          width="2"
-          font="mozillavr">
+          width="4"
+          scale="1.2 1.2 1.2"
+          side="double"
+          baseline="center">
         </a-text>
-        <a-entity id="next-piece-blocks" position="0 0 0.06"></a-entity>
+        <a-entity id="next-piece-blocks" position="0 0 0.08"></a-entity>
       </a-entity>
       
       <!-- Rakibin Sonraki Parçası - DAHA BÜYÜK VE NET -->
       <a-entity id="opponent-next-piece-container" position="2.2 0.5 0">
         <a-box 
-          width="0.6" 
-          height="0.6" 
+          width="0.7" 
+          height="0.7" 
           depth="0.12"
-          material="color: #0a0a14; opacity: 0.95; transparent: true">
+          material="shader: flat; color: #0a0a14; opacity: 0.95">
         </a-box>
         <a-box 
-          width="0.62" 
-          height="0.62" 
+          width="0.72" 
+          height="0.72" 
           depth="0.1"
-          material="color: #ff6b6b; emissive: #ff6b6b; emissiveIntensity: 0.6; opacity: 0.3; transparent: true"
+          material="shader: flat; color: #ff6b6b; opacity: 0.3"
           position="0 0 -0.02">
         </a-box>
         <a-text 
           value="RAKIP" 
-          position="0 0.4 0.05" 
+          position="0 0.5 0.07" 
           align="center" 
           color="#ff6b6b"
-          width="2"
-          font="mozillavr">
+          width="4"
+          scale="1.2 1.2 1.2"
+          side="double"
+          baseline="center">
         </a-text>
-        <a-entity id="opponent-next-piece-blocks" position="0 0 0.06"></a-entity>
+        <a-entity id="opponent-next-piece-blocks" position="0 0 0.08"></a-entity>
       </a-entity>
       
     </a-entity>
@@ -533,49 +543,57 @@
     <a-entity id="clear-particles"></a-entity>
     
     <!-- Rakip Bekleniyor Paneli -->
-    <a-entity id="waiting-panel" position="0 1.5 -2" visible="false">
+    <a-entity id="waiting-panel" position="0 1.5 -1.8" visible="false">
       <a-box 
-        width="1.8" 
-        height="1" 
+        width="2.2" 
+        height="1.4" 
         depth="0.1"
-        material="color: #0a0a14; opacity: 0.95; transparent: true">
+        material="shader: flat; color: #0a0a14; opacity: 0.95">
       </a-box>
       <a-box 
-        width="1.85" 
-        height="1.05" 
+        width="2.25" 
+        height="1.45" 
         depth="0.08"
-        material="color: #ffd93d; emissive: #ffd93d; emissiveIntensity: 0.5; opacity: 0.3; transparent: true"
+        material="shader: flat; color: #ffd93d; opacity: 0.3"
         position="0 0 -0.02">
       </a-box>
       <a-text 
         value="OYUNUN BITTI!" 
-        position="0 0.25 0.06" 
+        position="0 0.35 0.08" 
         align="center" 
         color="#ff6b6b"
-        width="4"
-        font="mozillavr">
+        width="8"
+        scale="1.6 1.6 1.6"
+        side="double"
+        baseline="center">
       </a-text>
       <a-text 
         id="waiting-score-text"
         value="Skorun: 0" 
-        position="0 0 0.06" 
+        position="0 0.05 0.08" 
         align="center" 
         color="#ffd93d"
-        width="3">
+        width="7"
+        scale="1.4 1.4 1.4"
+        side="double"
+        baseline="center">
       </a-text>
       <a-text 
         value="Rakip bekleniyor..." 
-        position="0 -0.25 0.06" 
+        position="0 -0.25 0.08" 
         align="center" 
         color="#00f5ff"
-        width="3">
+        width="7"
+        scale="1.3 1.3 1.3"
+        side="double"
+        baseline="center">
       </a-text>
       <!-- Dönen animasyon -->
       <a-ring 
-        position="0 -0.45 0.06"
-        radius-inner="0.04"
-        radius-outer="0.06"
-        material="color: #00f5ff; emissive: #00f5ff; emissiveIntensity: 0.8"
+        position="0 -0.5 0.08"
+        radius-inner="0.06"
+        radius-outer="0.1"
+        material="shader: flat; color: #00f5ff; opacity: 0.8"
         animation="property: rotation; to: 0 0 360; dur: 1000; loop: true; easing: linear">
       </a-ring>
     </a-entity>
@@ -600,23 +618,25 @@
       <a-text 
         id="result-text"
         value="OYUN BITTI" 
-        position="0 1.0 0.1" 
+        position="0 1.0 0.12" 
         align="center" 
         color="#ffffff"
-        width="12"
-        scale="1.5 1.5 1.5"
-        font="mozillavr">
+        width="15"
+        scale="2 2 2"
+        side="double"
+        baseline="center">
       </a-text>
       <!-- Skorlar -->
       <a-text 
         id="final-scores-text"
         value="" 
-        position="0 0.5 0.1" 
+        position="0 0.5 0.12" 
         align="center" 
         color="#ffd93d"
-        width="10"
-        scale="1.3 1.3 1.3"
-        font="mozillavr">
+        width="12"
+        scale="1.6 1.6 1.6"
+        side="double"
+        baseline="center">
       </a-text>
       <!-- Ayırıcı çizgi -->
       <a-box 
@@ -627,23 +647,26 @@
         material="shader: flat; color: #00ffff; opacity: 1">
       </a-box>
       <!-- Developer Credit -->
-      <a-entity id="developer-credit" position="0 -0.2 0.1" visible="true">
+      <a-entity id="developer-credit" position="0 -0.15 0.12" visible="true">
         <a-text 
           value="Gelistiren:" 
           position="0 0.12 0" 
           align="center" 
           color="#aaaaaa"
-          width="5"
-          scale="1.1 1.1 1.1">
+          width="6"
+          scale="1.3 1.3 1.3"
+          side="double"
+          baseline="center">
         </a-text>
         <a-text 
           value="Cem YILDIRIM" 
           position="0 -0.1 0" 
           align="center" 
           color="#00ffff"
-          width="7"
-          scale="1.2 1.2 1.2"
-          font="mozillavr">
+          width="8"
+          scale="1.5 1.5 1.5"
+          side="double"
+          baseline="center">
         </a-text>
       </a-entity>
       
@@ -651,49 +674,55 @@
       <a-box 
         id="play-again-btn-vr"
         position="-0.6 -0.7 0.1"
-        width="1.1" 
-        height="0.4" 
+        width="1.2" 
+        height="0.45" 
         depth="0.08"
         material="shader: flat; color: #00ff00; opacity: 1"
         class="clickable interactive-btn">
       </a-box>
       <a-text 
         value="TEKRAR OYNA" 
-        position="-0.6 -0.7 0.15" 
+        position="-0.6 -0.7 0.16" 
         align="center" 
         color="#000000"
-        width="5"
-        scale="1.2 1.2 1.2">
+        width="6"
+        scale="1.4 1.4 1.4"
+        side="double"
+        baseline="center">
       </a-text>
       
       <!-- ÇIKIŞ BUTONU - Interactive -->
       <a-box 
         id="exit-btn-vr"
         position="0.6 -0.7 0.1"
-        width="1.1" 
-        height="0.4" 
+        width="1.2" 
+        height="0.45" 
         depth="0.08"
         material="shader: flat; color: #ff3333; opacity: 1"
         class="clickable interactive-btn">
       </a-box>
       <a-text 
         value="CIKIS" 
-        position="0.6 -0.7 0.15" 
+        position="0.6 -0.7 0.16" 
         align="center" 
         color="#ffffff"
-        width="5"
-        scale="1.2 1.2 1.2">
+        width="6"
+        scale="1.4 1.4 1.4"
+        side="double"
+        baseline="center">
       </a-text>
       
       <!-- Bekleme durumu mesajı -->
       <a-text 
         id="rematch-status"
         value="" 
-        position="0 -1.1 0.1" 
+        position="0 -1.1 0.12" 
         align="center" 
         color="#ffd93d"
-        width="6"
-        scale="1.1 1.1 1.1"
+        width="8"
+        scale="1.3 1.3 1.3"
+        side="double"
+        baseline="center"
         visible="false">
       </a-text>
     </a-entity>

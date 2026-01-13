@@ -326,11 +326,29 @@ function showVREntryButton() {
           cursor: pointer;
           margin-top: 30px;
           animation: pulse 1.5s infinite;
+          -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
         ">
           🥽 VR'A GİR VE OYNA
         </button>
+        <button id="start-normal-btn" class="vr-btn" style="
+          font-size: 18px;
+          padding: 15px 40px;
+          background: linear-gradient(180deg, #666, #444);
+          border: none;
+          border-radius: 10px;
+          color: white;
+          cursor: pointer;
+          margin-top: 15px;
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+        ">
+          🖥️ VR'sız Oyna
+        </button>
         <p style="color: #888; margin-top: 20px; font-size: 14px;">
-          Meta Quest: Bu butona tıklayarak VR moduna geçin
+          Meta Quest: Yeşil butona tıklayın<br>
+          PC: VR başlığınız yoksa gri butona tıklayın
         </p>
       </div>
       <style>
@@ -341,11 +359,22 @@ function showVREntryButton() {
       </style>
     `;
     
-    // Butona click listener ekle
+    // Butonlara event listener ekle
     setTimeout(() => {
       const vrBtn = document.getElementById('enter-vr-btn');
+      const normalBtn = document.getElementById('start-normal-btn');
+      
       if (vrBtn) {
+        // Hem click hem touchend için
         vrBtn.addEventListener('click', startGameWithVR);
+        vrBtn.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          startGameWithVR();
+        });
+      }
+      
+      if (normalBtn) {
+        normalBtn.addEventListener('click', startGameWithoutVR);
       }
     }, 100);
   }
@@ -354,30 +383,46 @@ function showVREntryButton() {
 function startGameWithVR() {
   console.log('🥽 VR moduna giriliyor...');
   
-  // VR moduna geç
   const scene = document.querySelector('a-scene');
-  if (scene && scene.enterVR) {
+  
+  // Önce overlay'i gizle ve oyunu başlat
+  hideAllOverlays();
+  
+  if (pendingGameSeed !== null) {
+    initGame(pendingGameSeed);
+    pendingGameSeed = null;
+  }
+  
+  // Sonra VR moduna geçmeyi dene
+  if (scene) {
+    // A-Frame scene hazır mı kontrol et
+    if (scene.hasLoaded) {
+      tryEnterVR(scene);
+    } else {
+      scene.addEventListener('loaded', () => {
+        tryEnterVR(scene);
+      });
+    }
+  }
+}
+
+function tryEnterVR(scene) {
+  if (scene.enterVR) {
     scene.enterVR().then(() => {
       console.log('✅ VR moduna girildi');
-      hideAllOverlays();
-      if (pendingGameSeed !== null) {
-        initGame(pendingGameSeed);
-        pendingGameSeed = null;
-      }
     }).catch(err => {
-      console.log('⚠️ VR modu başlatılamadı, normal modda devam:', err);
-      hideAllOverlays();
-      if (pendingGameSeed !== null) {
-        initGame(pendingGameSeed);
-        pendingGameSeed = null;
-      }
+      console.log('⚠️ VR modu başlatılamadı:', err.message || err);
     });
-  } else {
-    hideAllOverlays();
-    if (pendingGameSeed !== null) {
-      initGame(pendingGameSeed);
-      pendingGameSeed = null;
-    }
+  }
+}
+
+function startGameWithoutVR() {
+  console.log('🖥️ VR olmadan başlatılıyor...');
+  hideAllOverlays();
+  
+  if (pendingGameSeed !== null) {
+    initGame(pendingGameSeed);
+    pendingGameSeed = null;
   }
 }
 
@@ -619,6 +664,7 @@ function resetPiece() {
   
   if (collision()) {
     gameOver = true;
+    stopGameLoop(); // Döngüyü durdur
     stopMusic();
     playGameOverSound();
     socket.emit('gameOver', { score });
@@ -899,18 +945,41 @@ function showGameOverPanel() {
 }
 
 // ==================== OYUN DÖNGÜSÜ ====================
-function gameLoop(time) {
-  if (!gameOver && gameStarted) {
-    // Satır silme animasyonu sırasında drop çağırma
-    if (!isClearing && time - lastDrop > dropInterval) {
-      drop();
-      lastDrop = time;
-    }
-    requestAnimationFrame(gameLoop);
+let gameLoopInterval = null;
+
+function gameLoop() {
+  if (!gameOver && gameStarted && !isClearing) {
+    drop();
+  }
+}
+
+function startGameLoop() {
+  // Önce varsa durdur
+  if (gameLoopInterval) {
+    clearInterval(gameLoopInterval);
+  }
+  // setInterval ile döngü başlat (VR'da daha güvenilir)
+  gameLoopInterval = setInterval(gameLoop, dropInterval);
+  console.log('🎮 Game loop başlatıldı, interval:', dropInterval);
+}
+
+function stopGameLoop() {
+  if (gameLoopInterval) {
+    clearInterval(gameLoopInterval);
+    gameLoopInterval = null;
+  }
+}
+
+function updateDropInterval(newInterval) {
+  dropInterval = newInterval;
+  if (gameStarted && !gameOver) {
+    startGameLoop(); // Yeni interval ile yeniden başlat
   }
 }
 
 function initGame(seed) {
+  console.log('🎮 Oyun başlatılıyor, seed:', seed);
+  
   gameSeed = seed;
   pieceIndex = 0;
   myBoard = createBoard();
@@ -944,7 +1013,10 @@ function initGame(seed) {
   render3DCurrentPiece();
   render3DNextPiece();
   
-  requestAnimationFrame(gameLoop);
+  // Game loop başlat
+  startGameLoop();
+  
+  console.log('✅ Oyun başladı!');
 }
 
 // ==================== SOCKET.IO EVENT'LERİ ====================
